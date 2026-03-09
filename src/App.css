@@ -37,6 +37,31 @@
   padding: 2em;
 }
 
-.read-the-docs {
-  color: #888;
+.center-button {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.link-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.link:link,
+.link:visited {
+  color: rgb(170, 74, 11);
+}
+
+.link:hover,
+.link:focus {
+  color: burlywood;
+  text-decoration: underline;
 }

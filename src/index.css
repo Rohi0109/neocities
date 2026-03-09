@@ -1,4 +1,10 @@
 body {
-  background-color: #001a33;
+  background-color: hsl(109, 100%, 10%);
   color:whitesmoke;
+  font-family: "National Park", sans-serif;
+}
+button{
+  background-color: hsl(36, 100%, 10%);
+  color :whitesmoke;
+
 }
