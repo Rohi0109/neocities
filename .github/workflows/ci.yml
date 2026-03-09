@@ -1,0 +1,47 @@
+name: Deploy to Neocities
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Build
+        run: npm run build
+
+      - name: Set up Ruby
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: '3.2'
+          bundler-cache: false
+
+      - name: Install Neocities CLI
+        run: |
+          gem install neocities
+          echo "$(ruby -e 'print Gem.user_dir')/bin" >> $GITHUB_PATH
+
+      - name: Configure Neocities CLI
+        env:
+          NEOCITIES_API_KEY: ${{ secrets.NEOCITIES_API_KEY }}
+          NEOCITIES_SITENAME: ${{ secrets.NEOCITIES_SITENAME }}
+        run: |
+          mkdir -p ~/.config/neocities
+          printf '{"API_KEY":"%s","SITENAME":"%s"}' "$NEOCITIES_API_KEY" "$NEOCITIES_SITENAME" > ~/.config/neocities/config.json
+
+      - name: Deploy
+        run: neocities push dist
