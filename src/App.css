@@ -65,3 +65,11 @@
   color: burlywood;
   text-decoration: underline;
 }
+
+.books-table {
+  margin: 0 auto;
+}
+
+.books-table td {
+  text-align: center;
+}
