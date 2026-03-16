@@ -3,5 +3,11 @@
     "slug": "first_post",
     "title": "Hello world",
     "date": " 2026-03-13"
+  },
+  {
+     "slug": "stoner",
+    "title": "stoner book review",
+    "date": " 2026-03-14"
   }
+
 ]
