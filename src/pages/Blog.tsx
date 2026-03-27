@@ -68,11 +68,11 @@ function Blog() {
       {!error && posts.length === 0 && <p>Loading…</p>}
 
       <h3>My pieces on stuff i do and think about</h3>
-      <table>
+      <table style={{ margin: '0 auto' }}>
         <tbody>
           {posts.map((post) => (
             <tr key={post.slug}>
-              <td>
+              <td style={{ textAlign: 'center' }}>
                 <Link to={`/blog/${post.slug}`}>
                   {post.title}, {post.date}
                 </Link>
