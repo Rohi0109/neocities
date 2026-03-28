@@ -5,14 +5,18 @@
     "date": " 2026-03-13"
   },
   {
-     "slug": "stoner",
+    "slug": "stoner",
     "title": "stoner book review",
     "date": " 2026-03-14"
   },
-    {
-     "slug": "critical_thinking_&_disiplcine",
+  {
+    "slug": "critical_thinking_&_disiplcine",
     "title": "critical thinking disiplcine in the digital world",
     "date": " 2026-03-14"
+  },
+  {
+    "slug": "testing_server",
+    "title": "Testing server",
+    "date": "2026-03-28"
   }
-
 ]
