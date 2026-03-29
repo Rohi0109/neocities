@@ -62,5 +62,9 @@
   {
     "date": "3/27",
     "info": "If youre seeing this my thinkcentre serve is up! Basically spent the day either studying a little aws, watching my friend struggle at NKG at hollow knight and going to an indian buffet and reading a little. I made this blog server thing in a second lets see if it works!"
+  },
+  {
+    "date": "3/28",
+    "info": "Switched my server to gunicorn, ran 5 miles in pain again but now i know its just my right ankle ( my fault from soccer) and my left hamstring ( im really hoping strengthening fixes this one) the combination of the two slow me down significantly. Read half of into the lighthouse and grinded aws certs which i pushed exam to Wednesday because i think ill have more cover to study Monday Tuesday. Chill day had fun"
   }
 ]
