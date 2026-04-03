@@ -96,7 +96,7 @@ def post_update():
 
     try:
         updates = json.loads(UPDATES_FILE.read_text())
-        updates.append({"date": entry_date, "info": info})
+        updates.insert(0, {"date": entry_date, "info": info})  # prepend for descending order
         UPDATES_FILE.write_text(json.dumps(updates, indent=2, ensure_ascii=False))
 
         subprocess.run(["git", "add", "public/updates.json"], cwd=REPO_ROOT, check=True)
