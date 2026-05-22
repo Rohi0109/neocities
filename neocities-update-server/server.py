@@ -100,13 +100,6 @@ def post_update():
         updates.insert(0, {"date": entry_date, "info": info})  # prepend for descending order
         UPDATES_FILE.write_text(json.dumps(updates, indent=2, ensure_ascii=False))
 
-        subprocess.run(["git", "add", "public/updates.json"], cwd=REPO_ROOT, check=True)
-        subprocess.run(
-            ["git", "commit", "-m", f"update: {entry_date}"],
-            cwd=REPO_ROOT, check=True
-        )
-        subprocess.run(["git", "push"], cwd=REPO_ROOT, check=True)
-
         return redirect("/?status=ok")
     except Exception as e:
         return redirect(f"/?status=err&detail={str(e)[:80]}")
@@ -146,14 +139,6 @@ def post_blog():
         today_iso = date.today().isoformat()
         posts.append({"slug": slug, "title": title, "date": today_iso})
         POSTS_FILE.write_text(json.dumps(posts, indent=2, ensure_ascii=False))
-
-        # Git commit and push
-        subprocess.run(["git", "add", f"public/posts/{slug}.md", "public/posts.json"], cwd=REPO_ROOT, check=True)
-        subprocess.run(
-            ["git", "commit", "-m", f"blog: {title}"],
-            cwd=REPO_ROOT, check=True
-        )
-        subprocess.run(["git", "push"], cwd=REPO_ROOT, check=True)
 
         return redirect("/blog?status=ok")
     except Exception as e:
