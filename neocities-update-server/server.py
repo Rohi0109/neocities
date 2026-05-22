@@ -2,6 +2,7 @@ import json
 import subprocess
 from datetime import date
 from pathlib import Path
+import os
 
 from flask import Flask, request, redirect
 
@@ -160,4 +161,5 @@ def post_blog():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5000, debug=False)
+    # Listen on port 9500 so this server is reachable over TailScale
+    app.run(host="0.0.0.0", port=9500, debug=False)
