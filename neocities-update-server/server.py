@@ -6,14 +6,22 @@ import os
 
 from flask import Flask, request, redirect
 
-# Repo root is one level up from this server directory
-REPO_ROOT = Path(__file__).resolve().parent.parent
-PUBLIC_DIR = REPO_ROOT / "public"
+SERVER_DIR = Path(__file__).resolve().parent
+REPO_ROOT = SERVER_DIR.parent
+
+# In Docker, the server may be copied to /app/server.py, so parent.parent becomes /
+# and the repo's public directory is not discoverable unless it is mounted explicitly.
+PUBLIC_DIR = Path(os.environ.get("NEOCITIES_PUBLIC_DIR", REPO_ROOT / "public")).resolve()
 UPDATES_FILE = PUBLIC_DIR / "updates.json"
 POSTS_FILE = PUBLIC_DIR / "posts.json"
 POSTS_DIR = PUBLIC_DIR / "posts"
 
 app = Flask(__name__)
+
+print(f"SERVER_DIR={SERVER_DIR}", flush=True)
+print(f"REPO_ROOT={REPO_ROOT}", flush=True)
+print(f"PUBLIC_DIR={PUBLIC_DIR}", flush=True)
+print(f"UPDATES_FILE={UPDATES_FILE} exists={UPDATES_FILE.exists()}", flush=True)
 
 STYLE = """
     body { font-family: sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
