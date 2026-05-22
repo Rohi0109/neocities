@@ -7,20 +7,25 @@ import os
 from flask import Flask, request, redirect
 
 SERVER_DIR = Path(__file__).resolve().parent
-REPO_ROOT = SERVER_DIR.parent
+REPO_ROOT = Path(os.environ.get("REPO_ROOT", SERVER_DIR.parent)).resolve()
 
 # In Docker, the server may be copied to /app/server.py, so parent.parent becomes /
 # and the repo's public directory is not discoverable unless it is mounted explicitly.
 PUBLIC_DIR = Path(os.environ.get("NEOCITIES_PUBLIC_DIR", REPO_ROOT / "public")).resolve()
+DIST_DIR = Path(os.environ.get("NEOCITIES_DIST_DIR", REPO_ROOT / "dist")).resolve()
 UPDATES_FILE = PUBLIC_DIR / "updates.json"
 POSTS_FILE = PUBLIC_DIR / "posts.json"
 POSTS_DIR = PUBLIC_DIR / "posts"
+DIST_UPDATES_FILE = DIST_DIR / "updates.json"
+DIST_POSTS_FILE = DIST_DIR / "posts.json"
+DIST_POSTS_DIR = DIST_DIR / "posts"
 
 app = Flask(__name__)
 
 print(f"SERVER_DIR={SERVER_DIR}", flush=True)
 print(f"REPO_ROOT={REPO_ROOT}", flush=True)
 print(f"PUBLIC_DIR={PUBLIC_DIR}", flush=True)
+print(f"DIST_DIR={DIST_DIR}", flush=True)
 print(f"UPDATES_FILE={UPDATES_FILE} exists={UPDATES_FILE.exists()}", flush=True)
 
 STYLE = """
@@ -106,7 +111,10 @@ def post_update():
     try:
         updates = json.loads(UPDATES_FILE.read_text())
         updates.insert(0, {"date": entry_date, "info": info})  # prepend for descending order
-        UPDATES_FILE.write_text(json.dumps(updates, indent=2, ensure_ascii=False))
+        updates_json = json.dumps(updates, indent=2, ensure_ascii=False)
+        UPDATES_FILE.write_text(updates_json)
+        if DIST_DIR.exists():
+            DIST_UPDATES_FILE.write_text(updates_json)
 
         return redirect("/?status=ok")
     except Exception as e:
@@ -141,12 +149,18 @@ def post_blog():
         # Write the markdown file
         post_path = POSTS_DIR / f"{slug}.md"
         post_path.write_text(content)
+        if DIST_DIR.exists():
+            DIST_POSTS_DIR.mkdir(parents=True, exist_ok=True)
+            (DIST_POSTS_DIR / f"{slug}.md").write_text(content)
 
         # Update posts.json
         posts = json.loads(POSTS_FILE.read_text())
         today_iso = date.today().isoformat()
         posts.append({"slug": slug, "title": title, "date": today_iso})
-        POSTS_FILE.write_text(json.dumps(posts, indent=2, ensure_ascii=False))
+        posts_json = json.dumps(posts, indent=2, ensure_ascii=False)
+        POSTS_FILE.write_text(posts_json)
+        if DIST_DIR.exists():
+            DIST_POSTS_FILE.write_text(posts_json)
 
         return redirect("/blog?status=ok")
     except Exception as e:
