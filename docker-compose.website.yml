@@ -1,0 +1,11 @@
+services:
+  website:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: neocities-website
+    ports:
+      - "9500:80"
+    volumes:
+      - ./dist:/usr/share/nginx/html:ro
+    restart: unless-stopped
