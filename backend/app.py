@@ -10,8 +10,20 @@ PUBLIC_DIR = Path(__file__).resolve().parent.parent / "public"
 UPDATES_FILE = PUBLIC_DIR / "updates.json"
 
 
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
-app.secret_key = os.environ.get("FLASK_SECRET_KEY")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "my-secure-password")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY", "dev-only-change-me")
+
+
+def read_updates() -> list[dict]:
+    if not UPDATES_FILE.exists():
+        return []
+
+    try:
+        payload = json.loads(UPDATES_FILE.read_text())
+    except json.JSONDecodeError:
+        return []
+
+    return payload if isinstance(payload, list) else []
 
 # 1. THE LOGIN ENDPOINT
 @app.route("/api/login", methods=["POST"])
@@ -42,14 +54,11 @@ def updates_api():
     if not session.get("logged_in"):
         return jsonify({"status": "error", "message": "Please log in first."}), 401
 
-    if not UPDATES_FILE.exists():
-        return jsonify([])
-
-    updates = json.loads(UPDATES_FILE.read_text())
+    updates = read_updates()
     return jsonify(updates)
 
 # 2. THE PROTECTED UPDATES ROUTE
-@app.route("/updates")
+@app.route("/updates", strict_slashes=False)
 def updates_page():
     # Check if the user's session says they are logged in
     if not session.get("logged_in"):
@@ -58,7 +67,19 @@ def updates_page():
             403,
         )
 
-    return "<h1>Secret Updates</h1><p>Update 1: Site is live!</p>"
+    updates = read_updates()
+    if not updates:
+        return "<h1>Secret Updates</h1><p>No updates yet.</p>"
+
+    lines = "".join(
+        f"<li>{item.get('date', '').strip()}: {item.get('info', '')}</li>" for item in updates
+    )
+    return f"<h1>Secret Updates</h1><ul>{lines}</ul>"
+
+
+@app.route("/api/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"})
 
 if __name__ == "__main__":
     app.run(port=5000, debug=True)

@@ -1,21 +1,45 @@
+:root {
+  --paper: #f6fff4;
+  --ink: #12491f;
+  --ink-muted: #2c6b39;
+  --line: #6da377;
+}
+
 body {
   margin: 8px;
   min-width: 320px;
   line-height: 1.5;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: 'Courier New', Courier, monospace;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem 0;
 }
 
 .nav {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  max-width: 320px;
 }
 
 a {
-  color: inherit;
+  color: var(--ink-muted);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+a:hover {
+  color: var(--ink);
 }
 
 button,
 input,
 textarea {
   font: inherit;
+  color: var(--ink);
+  border: 1px solid var(--line);
+  background: #ffffff;
 }

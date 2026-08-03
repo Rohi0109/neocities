@@ -1,57 +1,70 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Post</title>
-    <style>
-      body {
-        margin: 8px;
-        min-width: 320px;
-        line-height: 1.5;
-      }
 
-      a {
-        color: inherit;
-      }
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Post</title>
+  <style>
+    :root {
+      --paper: #f6fff4;
+      --ink: #12491f;
+      --ink-muted: #2c6b39;
+    }
 
-      pre {
-        white-space: pre-wrap;
-        font: inherit;
-      }
-    </style>
-  </head>
-  <body>
-    <p><a href="/posts/">Back</a></p>
-    <h2 id="title">Post</h2>
-    <pre id="content">Loading...</pre>
-    <script>
-      const params = new URLSearchParams(window.location.search)
-      const slug = params.get('slug')
+    body {
+      margin: 8px;
+      min-width: 320px;
+      line-height: 1.5;
+      background: var(--paper);
+      color: var(--ink);
+      font-family: 'Courier New', Courier, monospace;
+    }
 
-      if (!slug) {
-        document.getElementById('content').textContent = 'Missing post slug.'
-      } else {
-        Promise.all([fetch('/posts.json'), fetch(`/posts/${slug}.md`)])
-          .then(async ([indexResponse, markdownResponse]) => {
-            if (!indexResponse.ok) {
-              throw new Error(`Failed to load posts: ${indexResponse.status}`)
-            }
+    a {
+      color: var(--ink-muted);
+      text-underline-offset: 2px;
+    }
 
-            if (!markdownResponse.ok) {
-              throw new Error(`Failed to load post: ${markdownResponse.status}`)
-            }
+    pre {
+      white-space: pre-wrap;
+      font: inherit;
+    }
+  </style>
+</head>
 
-            const posts = await indexResponse.json()
-            const markdown = await markdownResponse.text()
-            const post = posts.find((entry) => entry.slug === slug)
-            document.getElementById('title').textContent = post ? post.title : slug
-            document.getElementById('content').textContent = markdown
-          })
-          .catch((error) => {
-            document.getElementById('content').textContent = error.message
-          })
-      }
-    </script>
-  </body>
+<body>
+  <p><a href="/posts/">Back</a></p>
+  <h2 id="title">Post</h2>
+  <pre id="content">Loading...</pre>
+  <script>
+    const params = new URLSearchParams(window.location.search)
+    const slug = params.get('slug')
+
+    if (!slug) {
+      document.getElementById('content').textContent = 'Missing post slug.'
+    } else {
+      Promise.all([fetch('/posts.json'), fetch(`/posts/${slug}.md`)])
+        .then(async ([indexResponse, markdownResponse]) => {
+          if (!indexResponse.ok) {
+            throw new Error(`Failed to load posts: ${indexResponse.status}`)
+          }
+
+          if (!markdownResponse.ok) {
+            throw new Error(`Failed to load post: ${markdownResponse.status}`)
+          }
+
+          const posts = await indexResponse.json()
+          const markdown = await markdownResponse.text()
+          const post = posts.find((entry) => entry.slug === slug)
+          document.getElementById('title').textContent = post ? post.title : slug
+          document.getElementById('content').textContent = markdown
+        })
+        .catch((error) => {
+          document.getElementById('content').textContent = error.message
+        })
+    }
+  </script>
+</body>
+
 </html>
