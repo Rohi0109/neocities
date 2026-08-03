@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Posts</title>
+    <style>
+      body {
+        margin: 8px;
+        min-width: 320px;
+        line-height: 1.5;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      .stack {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+    </style>
+  </head>
+  <body>
+    <p><a href="/">Back</a></p>
+    <h2>Posts</h2>
+    <div id="posts">Loading...</div>
+    <script>
+      function formatDate(value) {
+        const parsed = new Date(`${value.trim()}T00:00:00`)
+        return Number.isNaN(parsed.getTime())
+          ? value
+          : new Intl.DateTimeFormat('en-US', {
+              month: 'short',
+              day: 'numeric',
+              year: 'numeric',
+            }).format(parsed)
+      }
+
+      fetch('/posts.json')
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`Failed to load posts: ${response.status}`)
+          }
+          return response.json()
+        })
+        .then((posts) => {
+          const root = document.getElementById('posts')
+          root.innerHTML = ''
+
+          const list = document.createElement('div')
+          list.className = 'stack'
+
+          posts
+            .slice()
+            .reverse()
+            .forEach((post) => {
+              const link = document.createElement('a')
+              link.href = `/posts/view.html?slug=${encodeURIComponent(post.slug)}`
+              link.textContent = `${post.title} (${formatDate(post.date)})`
+              list.appendChild(link)
+            })
+
+          root.appendChild(list)
+        })
+        .catch((error) => {
+          document.getElementById('posts').textContent = `Unable to load posts: ${error.message}`
+        })
+    </script>
+  </body>
+</html>

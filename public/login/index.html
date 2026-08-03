@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Login</title>
+    <style>
+      body {
+        margin: 8px;
+        min-width: 320px;
+        line-height: 1.5;
+      }
+
+      a {
+        color: inherit;
+      }
+
+      button,
+      input {
+        font: inherit;
+      }
+    </style>
+  </head>
+  <body>
+    <p><a href="/">Back</a></p>
+    <h2>Log in</h2>
+    <form id="login-form">
+      <label for="password">Password</label>
+      <input id="password" name="password" type="password" autocomplete="current-password" required />
+      <button type="submit">Log in</button>
+    </form>
+    <p id="message"></p>
+    <script>
+      document.getElementById('login-form').addEventListener('submit', async (event) => {
+        event.preventDefault()
+
+        const message = document.getElementById('message')
+        const password = document.getElementById('password').value
+        message.textContent = ''
+
+        try {
+          const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            credentials: 'include',
+            body: JSON.stringify({ password }),
+          })
+
+          const data = await response.json()
+          if (!response.ok) {
+            throw new Error(data.message || `Login failed: ${response.status}`)
+          }
+
+          window.location.href = '/updates/'
+        } catch (error) {
+          message.textContent = error.message || 'Unable to log in.'
+        }
+      })
+    </script>
+  </body>
+</html>

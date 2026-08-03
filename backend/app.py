@@ -1,11 +1,17 @@
+import json
 import os
+from pathlib import Path
+from dotenv import load_dotenv
 from flask import Flask, jsonify, request, session
 
 app = Flask(__name__)
+load_dotenv()
+PUBLIC_DIR = Path(__file__).resolve().parent.parent / "public"
+UPDATES_FILE = PUBLIC_DIR / "updates.json"
 
-# FIX 1: Set a fallback or environment variable for the missing admin password
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "my-secure-password")
-app.secret_key = os.environ.get("FLASK_SECRET_KEY", "super-secret-key")
+
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
+app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
 # 1. THE LOGIN ENDPOINT
 @app.route("/api/login", methods=["POST"])
@@ -18,6 +24,29 @@ def login():
         return jsonify({"status": "success", "message": "Logged in!"})
 
     return jsonify({"status": "error", "message": "Invalid password"}), 401
+
+
+@app.route("/api/logout", methods=["POST"])
+def logout():
+    session.pop("logged_in", None)
+    return jsonify({"status": "success", "message": "Logged out."})
+
+
+@app.route("/api/session", methods=["GET"])
+def session_status():
+    return jsonify({"logged_in": bool(session.get("logged_in"))})
+
+
+@app.route("/api/updates", methods=["GET"])
+def updates_api():
+    if not session.get("logged_in"):
+        return jsonify({"status": "error", "message": "Please log in first."}), 401
+
+    if not UPDATES_FILE.exists():
+        return jsonify([])
+
+    updates = json.loads(UPDATES_FILE.read_text())
+    return jsonify(updates)
 
 # 2. THE PROTECTED UPDATES ROUTE
 @app.route("/updates")
