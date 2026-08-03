@@ -1,129 +1,21 @@
 <!doctype html>
 <html lang="en">
-
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Books</title>
-  <style>
-    :root {
-      --paper: #f6fff4;
-      --ink: #12491f;
-      --ink-muted: #2c6b39;
-    }
-
-    body {
-      margin: 8px;
-      min-width: 320px;
-      line-height: 1.5;
-      background: var(--paper);
-      color: var(--ink);
-      font-family: 'Courier New', Courier, monospace;
-    }
-
-    a {
-      color: var(--ink-muted);
-      text-underline-offset: 2px;
-    }
-
-    .stack {
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .section {
-      margin-top: 1.5rem;
-    }
-  </style>
-</head>
-
-<body>
-  <p><a href="/">Back</a></p>
-  <h2>Bookshelf</h2>
-  <p>
-    <i>
-      Books that I liked in the last couple years. maybe ill make a bigger one with books i
-      disliked but all of these i would recomend.
-    </i>
-  </p>
-  <div id="books">Loading...</div>
-  <script>
-    const categoryLabels = {
-      contemporary: 'Contemporary',
-      classic: 'Classic',
-      to_read: 'To Read',
-    }
-
-    function getLastName(author) {
-      const parts = author.split(/\s+/).filter(Boolean)
-      return parts.length > 0 ? parts[parts.length - 1] : author
-    }
-
-    function renderBooks(data) {
-      const grouped = data.reduce((acc, book) => {
-        const key = book.category || 'uncategorized'
-        if (!acc[key]) {
-          acc[key] = []
-        }
-        acc[key].push(book)
-        return acc
-      }, {})
-
-      const root = document.getElementById('books')
-      root.innerHTML = ''
-
-      Object.keys(grouped)
-        .sort((a, b) => a.localeCompare(b))
-        .forEach((category) => {
-          grouped[category].sort((a, b) => {
-            const lastA = getLastName(a.author).toLowerCase()
-            const lastB = getLastName(b.author).toLowerCase()
-            if (lastA !== lastB) {
-              return lastA.localeCompare(lastB)
-            }
-            return a.title.localeCompare(b.title)
-          })
-
-          const section = document.createElement('section')
-          section.className = 'section'
-
-          const heading = document.createElement('h3')
-          heading.textContent = categoryLabels[category] || category
-          section.appendChild(heading)
-
-          const list = document.createElement('div')
-          list.className = 'stack'
-
-          grouped[category].forEach((book) => {
-            const item = document.createElement('p')
-            item.textContent =
-              book.title +
-              ' - ' +
-              book.author +
-              (book.year ? ` (${book.year})` : '') +
-              (book.genre ? ` • ${book.genre}` : '') +
-              (book.reread ? ' • reread' : '')
-            list.appendChild(item)
-          })
-
-          section.appendChild(list)
-          root.appendChild(section)
-        })
-    }
-
-    fetch('/books.json')
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`Failed to load books: ${response.status}`)
-        }
-        return response.json()
-      })
-      .then(renderBooks)
-      .catch((error) => {
-        document.getElementById('books').textContent = `Could not load books: ${error.message}`
-      })
-  </script>
-</body>
-
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Books</title>
+    <link rel="stylesheet" href="/site.css" />
+  </head>
+  <body>
+    <p><a href="/">Back</a></p>
+    <h2>Bookshelf</h2>
+    <p>
+      <i>
+        Books that I liked in the last couple years. maybe ill make a bigger one with books i
+        disliked but all of these i would recomend.
+      </i>
+    </p>
+    <div id="books">Loading...</div>
+    <script src="/js/books.js"></script>
+  </body>
 </html>

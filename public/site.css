@@ -13,12 +13,6 @@ body {
   font-family: 'Courier New', Courier, monospace;
 }
 
-.nav {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
-}
-
 a {
   color: var(--ink-muted);
   text-underline-offset: 2px;
@@ -27,5 +21,20 @@ a {
 button,
 input,
 textarea {
+  font: inherit;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.section {
+  margin-top: 1.5rem;
+}
+
+pre {
+  white-space: pre-wrap;
   font: inherit;
 }
