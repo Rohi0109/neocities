@@ -1,40 +1,40 @@
 :root {
-  --paper: #f6fff4;
-  --ink: #12491f;
-  --ink-muted: #2c6b39;
+    --paper: #f6fff4;
+    --ink: #12491f;
+    --ink-muted: #2c6b39;
 }
 
 body {
-  margin: 8px;
-  min-width: 320px;
-  line-height: 1.5;
-  background: var(--paper);
-  color: var(--ink);
-  font-family: 'Courier New', Courier, monospace;
+    margin: 8px;
+    min-width: 320px;
+    line-height: 1.5;
+    background: var(--paper);
+    color: var(--ink);
+    font-family: 'Courier New', Courier, monospace;
 }
 
 a {
-  color: var(--ink-muted);
-  text-underline-offset: 2px;
+    color: var(--ink-muted);
+    text-underline-offset: 2px;
 }
 
 button,
 input,
 textarea {
-  font: inherit;
+    font: inherit;
 }
 
 .stack {
-  display: flex;
-  flex-direction: column;
-  gap: 0.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
 }
 
 .section {
-  margin-top: 1.5rem;
+    margin-top: 1.5rem;
 }
 
 pre {
-  white-space: pre-wrap;
-  font: inherit;
+    white-space: pre-wrap;
+    font: inherit;
 }
