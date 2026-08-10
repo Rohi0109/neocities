@@ -1,4 +1,6 @@
-.PHONY: frontend backend all
+COMPOSE := docker compose -f docker-compose.website.yml
+
+.PHONY: frontend backend dev build docker-down docker-up docker-restart all
 
 frontend:
 	npm run dev -- --host 0.0.0.0
@@ -6,6 +8,20 @@ frontend:
 backend:
 	uv run python backend/app.py
 
-# Running `make all` directly runs both in parallel
-all:
+dev:
 	@make -j 2 frontend backend
+
+build:
+	npm run build
+
+docker-down:
+	$(COMPOSE) down
+
+docker-up: build
+	$(COMPOSE) up -d --build
+
+docker-restart:
+	$(COMPOSE) down
+	$(MAKE) docker-up
+
+all: docker-restart
