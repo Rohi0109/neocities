@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 from flask import Flask, jsonify, request, session
 
 app = Flask(__name__)
-load_dotenv()
+load_dotenv(Path(__file__).resolve().parent / ".env")
 PUBLIC_DIR = Path(__file__).resolve().parent.parent / "public"
 UPDATES_FILE = PUBLIC_DIR / "updates.json"
 
@@ -13,13 +13,19 @@ UPDATES_FILE = PUBLIC_DIR / "updates.json"
 ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD")
 app.secret_key = os.environ.get("FLASK_SECRET_KEY")
 
+if not app.secret_key:
+    raise RuntimeError("FLASK_SECRET_KEY must be configured")
+
 # 1. THE LOGIN ENDPOINT
 @app.route("/api/login", methods=["POST"])
 def login():
     data = request.get_json() or {}
     password_given = data.get("password")
 
-    if password_given == ADMIN_PASSWORD:
+    if not ADMIN_PASSWORD:
+        return jsonify({"status": "error", "message": "Login is not configured."}), 503
+
+    if password_given and password_given == ADMIN_PASSWORD:
         session["logged_in"] = True  # Set the session variable
         return jsonify({"status": "success", "message": "Logged in!"})
 

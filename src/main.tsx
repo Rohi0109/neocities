@@ -2,7 +2,7 @@ import React from 'react'
 import ReactDOM from 'react-dom/client'
 import './styles.css'
 
-function Shell({ children }: { children: React.ReactNode }) {
+export function Shell({ children }: { children: React.ReactNode }) {
   return (
     <main className="page">
       <header className="hero">
@@ -13,6 +13,7 @@ function Shell({ children }: { children: React.ReactNode }) {
             <a href="/posts/">Posts</a>
             <a href="/updates/">Updates</a>
             <a href="/books/">Books</a>
+            <a href="/login/">Login</a>
           </nav>
         </div>
       </header>
@@ -21,11 +22,11 @@ function Shell({ children }: { children: React.ReactNode }) {
   )
 }
 
-function HomePage() {
+export function HomePage() {
   return null
 }
 
-function App() {
+export function App() {
   return <Shell>{<HomePage />}</Shell>
 }
 

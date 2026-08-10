@@ -1,0 +1,120 @@
+:root {
+  color: #ffffff;
+  background: #4F7942;
+  font-family: Cambria, Georgia, serif;
+  font-synthesis: none;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-height: 100%;
+  background: #4F7942;
+}
+
+body {
+  width: 60%;
+  min-width: 0;
+  min-height: 100vh;
+  margin: 0 auto;
+  padding: 2rem 3rem 4rem;
+  color: #ffffff;
+  background: #4F7942;
+  font-family: Cambria, Georgia, serif;
+  line-height: 1.55;
+}
+
+a:link,
+a:visited {
+  color: #ffffff;
+  text-underline-offset: 0.2em;
+}
+
+a:hover,
+a:focus-visible {
+  color: #baffc8;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: #ffffff;
+  font-weight: normal;
+}
+
+h2 {
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid #ffffff;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #ffffff;
+}
+
+blockquote {
+  max-width: 50%;
+  margin: 1em auto;
+  padding: 0.5em;
+}
+
+.blockquote-alt {
+  max-width: 65%;
+  font-size: 0.9em;
+}
+
+sup {
+  position: relative;
+  top: -0.3em;
+  font-size: 0.75em;
+  line-height: 0;
+}
+
+button,
+input,
+textarea {
+  border: 1px solid #ffffff;
+  border-radius: 0;
+  font: inherit;
+}
+
+input,
+textarea {
+  padding: 0.35rem 0.5rem;
+  color: #4F7942;
+  background: #ffffff;
+}
+
+button {
+  padding: 0.35rem 0.75rem;
+  color: #ffffff;
+  background: #4F7942;
+  cursor: pointer;
+}
+
+.stack {
+  gap: 0.45rem;
+}
+
+.stack p {
+  margin: 0;
+}
+
+.section {
+  margin-top: 2rem;
+}
+
+@media screen and (max-width: 768px) {
+  body {
+    width: 100%;
+    padding: 1.25rem;
+  }
+
+  blockquote,
+  .blockquote-alt {
+    max-width: 90%;
+  }
+}
