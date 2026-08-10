@@ -7,7 +7,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
     <main className="page">
       <header className="hero">
         <div className="hero-top">
-          <p className="eyebrow">hello welcome me!</p>
+          <h1 className="eyebrow">Welcome to my website</h1>
           <nav className="nav">
             <a href="/">Home</a>
             <a href="/posts/">Posts</a>
