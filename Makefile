@@ -1,4 +1,5 @@
 COMPOSE := docker compose -f docker-compose.website.yml
+.DEFAULT_GOAL := all
 
 .PHONY: frontend backend dev build docker-down docker-up docker-restart all
 
