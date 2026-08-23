@@ -7,6 +7,11 @@ type Todo = { id: string; text: string; completed: boolean; createdAt: number }
 type TodoPageProps = { todos: Todo[]; onAdd: (text: string) => void; onToggle: (id: string) => void }
 const STORAGE_KEY = 'personal-site-todos'
 
+function createTodoId() {
+  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
+  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
+}
+
 function loadTodos(): Todo[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
@@ -113,7 +118,7 @@ export function App() {
 
   function addTodo(text: string) {
     setTodos((current) => [...current, {
-      id: crypto.randomUUID(), text, completed: false, createdAt: Date.now(),
+      id: createTodoId(), text, completed: false, createdAt: Date.now(),
     }])
   }
 
