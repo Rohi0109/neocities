@@ -2,7 +2,7 @@ services:
   backend:
     build:
       context: .
-      dockerfile: backend/Dockerfile
+      dockerfile: docker/backend.Dockerfile
     env_file:
       - backend/.env
     volumes:
@@ -12,12 +12,10 @@ services:
   website:
     build:
       context: .
-      dockerfile: Dockerfile
+      dockerfile: docker/website.Dockerfile
     container_name: neocities-website
     ports:
       - "9500:80"
-    volumes:
-      - ./dist:/usr/share/nginx/html:ro
     depends_on:
       - backend
     restart: unless-stopped
