@@ -1,24 +1,33 @@
-import React, { useEffect, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import ReactDOM from 'react-dom/client'
 import { BrowserRouter, Link, Navigate, Route, Routes } from 'react-router-dom'
 import './styles.css'
 
-type Todo = { id: string; text: string; completed: boolean; createdAt: number }
-type TodoPageProps = { todos: Todo[]; onAdd: (text: string) => void; onToggle: (id: string) => void }
+type Todo = { id: string; text: string; completed: boolean; createdAt: string | number }
+type TodoPageProps = {
+  todos: Todo[]
+  loading: boolean
+  onAdd: (text: string) => Promise<void>
+  onToggle: (id: string) => Promise<void>
+}
 const STORAGE_KEY = 'personal-site-todos'
 
-function createTodoId() {
-  if (typeof crypto.randomUUID === 'function') return crypto.randomUUID()
-  return `${Date.now()}-${Math.random().toString(36).slice(2)}`
-}
-
-function loadTodos(): Todo[] {
+function loadLocalTodos(): Todo[] {
   try {
     const stored = localStorage.getItem(STORAGE_KEY)
     return stored ? (JSON.parse(stored) as Todo[]) : []
   } catch {
     return []
   }
+}
+
+function requireLogin(response: Response) {
+  if (response.status === 401) {
+    const returnPath = `${window.location.pathname}${window.location.search}`
+    window.location.assign(`/login/?next=${encodeURIComponent(returnPath)}`)
+    throw new Error('Login required.')
+  }
+  return response
 }
 
 export function Shell({ children }: { children: React.ReactNode }) {
@@ -62,15 +71,15 @@ function TodoList({ todos, emptyMessage, onToggle }: {
   )
 }
 
-function ActiveTodos({ todos, onAdd, onToggle }: TodoPageProps) {
+function ActiveTodos({ todos, loading, onAdd, onToggle }: TodoPageProps) {
   const [newTodo, setNewTodo] = useState('')
   const activeTodos = todos.filter((todo) => !todo.completed)
 
-  function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const text = newTodo.trim()
     if (!text) return
-    onAdd(text)
+    await onAdd(text)
     setNewTodo('')
   }
 
@@ -91,12 +100,16 @@ function ActiveTodos({ todos, onAdd, onToggle }: TodoPageProps) {
           <button type="submit">Add</button>
         </div>
       </form>
-      <TodoList todos={activeTodos} emptyMessage="Nothing to do right now." onToggle={onToggle} />
+      <TodoList
+        todos={activeTodos}
+        emptyMessage={loading ? "Loading todos..." : "Nothing to do right now."}
+        onToggle={onToggle}
+      />
     </section>
   )
 }
 
-function CompletedTodos({ todos, onToggle }: TodoPageProps) {
+function CompletedTodos({ todos, loading, onToggle }: TodoPageProps) {
   const completedTodos = todos.filter((todo) => todo.completed)
   return (
     <section className="todo-section" aria-labelledby="completed-heading">
@@ -104,7 +117,11 @@ function CompletedTodos({ todos, onToggle }: TodoPageProps) {
         <div><h2 id="completed-heading">Completed todos</h2><p>All the things I have finished.</p></div>
         <Link className="todo-page-link" to="/todos/">Back to todos</Link>
       </div>
-      <TodoList todos={completedTodos} emptyMessage="No completed todos yet." onToggle={onToggle} />
+      <TodoList
+        todos={completedTodos}
+        emptyMessage={loading ? "Loading todos..." : "No completed todos yet."}
+        onToggle={onToggle}
+      />
       {completedTodos.length > 0 && <p className="todo-help">Uncheck a todo to move it back to your list.</p>}
     </section>
   )
@@ -113,24 +130,90 @@ function CompletedTodos({ todos, onToggle }: TodoPageProps) {
 export function HomePage() { return null }
 
 export function App() {
-  const [todos, setTodos] = useState<Todo[]>(loadTodos)
-  useEffect(() => localStorage.setItem(STORAGE_KEY, JSON.stringify(todos)), [todos])
+  const [todos, setTodos] = useState<Todo[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const syncStarted = useRef(false)
 
-  function addTodo(text: string) {
-    setTodos((current) => [...current, {
-      id: createTodoId(), text, completed: false, createdAt: Date.now(),
-    }])
+  useEffect(() => {
+    if (syncStarted.current) return
+    syncStarted.current = true
+
+    async function loadTodos() {
+      try {
+        const response = requireLogin(await fetch('/api/todos', { credentials: 'include' }))
+        if (!response.ok) throw new Error('Unable to load todos.')
+        const serverTodos = (await response.json()) as Todo[]
+        const localTodos = loadLocalTodos()
+        const mergedTodos = [...serverTodos]
+
+        for (const localTodo of localTodos) {
+          const alreadySynced = mergedTodos.some(
+            (todo) => todo.text === localTodo.text && todo.completed === localTodo.completed,
+          )
+          if (alreadySynced) continue
+
+          const migratedResponse = requireLogin(await fetch('/api/todos', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ text: localTodo.text, completed: localTodo.completed }),
+          }))
+          if (!migratedResponse.ok) throw new Error('Unable to migrate local todos.')
+          mergedTodos.push((await migratedResponse.json()) as Todo)
+        }
+
+        localStorage.removeItem(STORAGE_KEY)
+        setTodos(mergedTodos)
+      } catch (requestError) {
+        setError(requestError instanceof Error ? requestError.message : 'Unable to load todos.')
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    void loadTodos()
+  }, [])
+
+  async function addTodo(text: string) {
+    setError('')
+    const response = requireLogin(await fetch('/api/todos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ text }),
+    }))
+    if (!response.ok) {
+      setError('Unable to add the todo.')
+      return
+    }
+    const todo = (await response.json()) as Todo
+    setTodos((current) => [...current, todo])
   }
 
-  function toggleTodo(id: string) {
-    setTodos((current) => current.map((todo) =>
-      todo.id === id ? { ...todo, completed: !todo.completed } : todo,
-    ))
+  async function toggleTodo(id: string) {
+    const currentTodo = todos.find((todo) => todo.id === id)
+    if (!currentTodo) return
+
+    setError('')
+    const response = requireLogin(await fetch(`/api/todos/${encodeURIComponent(id)}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify({ completed: !currentTodo.completed }),
+    }))
+    if (!response.ok) {
+      setError('Unable to update the todo.')
+      return
+    }
+    const updatedTodo = (await response.json()) as Todo
+    setTodos((current) => current.map((todo) => todo.id === id ? updatedTodo : todo))
   }
 
-  const todoPageProps = { todos, onAdd: addTodo, onToggle: toggleTodo }
+  const todoPageProps = { todos, loading, onAdd: addTodo, onToggle: toggleTodo }
   return (
     <Shell>
+      {error && <p className="todo-error" role="alert">{error}</p>}
       <Routes>
         <Route path="/" element={<HomePage />} />
         <Route path="/todos" element={<ActiveTodos {...todoPageProps} />} />

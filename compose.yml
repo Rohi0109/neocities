@@ -5,8 +5,25 @@ services:
       dockerfile: docker/backend.Dockerfile
     env_file:
       - backend/.env
+    environment:
+      AUTH_REQUIRED: "false"
+      TODO_DATA_FILE: /app/data/todos.json
     volumes:
       - ./public:/app/public:ro
+      - ./data:/app/data
+    restart: unless-stopped
+
+  update-server:
+    build:
+      context: .
+      dockerfile: docker/update-server.Dockerfile
+    container_name: neocities-update-server
+    environment:
+      NEOCITIES_PUBLIC_DIR: /data
+    ports:
+      - "9501:9500"
+    volumes:
+      - ./public:/data
     restart: unless-stopped
 
   website:

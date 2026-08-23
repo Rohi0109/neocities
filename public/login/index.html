@@ -54,7 +54,12 @@
             throw new Error(data.message || `Login failed: ${response.status}`)
           }
 
-          window.location.href = '/updates/'
+          const requestedPage = new URLSearchParams(window.location.search).get('next')
+          const safeDestination =
+            requestedPage && requestedPage.startsWith('/') && !requestedPage.startsWith('//')
+              ? requestedPage
+              : '/updates/'
+          window.location.href = safeDestination
         } catch (error) {
           message.textContent = error.message || 'Unable to log in.'
         }

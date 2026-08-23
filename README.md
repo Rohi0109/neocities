@@ -32,6 +32,9 @@ make dev
 
 The Vite development server proxies `/api` requests to Flask on port 5000.
 
+Authentication is currently disabled. To require login for updates and todos,
+set `AUTH_REQUIRED=true` for the backend service in `compose.yml`.
+
 ## Homelab deployment
 
 Create `backend/.env` with the required secrets:
@@ -47,7 +50,8 @@ Then build and start both containers:
 docker compose up -d --build
 ```
 
-The website is exposed on port **9500**. Useful commands:
+The website is exposed on port **9500** and the private update form on port
+**9501**. Useful commands:
 
 ```bash
 docker compose ps
@@ -56,7 +60,9 @@ docker compose down
 ```
 
 The website container serves the frontend produced during its image build. The
-`public/` bind mount on the backend lets it read locally published update data.
+`public/` bind mounts let the update server write data and the backend read the
+same files. Do not run a separate Compose project from inside
+`neocities-update-server/`.
 
 ## Other deployment
 

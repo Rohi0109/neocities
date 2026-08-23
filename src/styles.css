@@ -101,6 +101,7 @@
 }
 .todo-empty, .todo-help { color: rgba(245, 245, 245, 0.7); }
 .todo-help { margin: 1rem 0 0; font-size: 0.9rem; }
+.todo-error { margin: 1.5rem auto 0; color: #ffd0c7; }
 
 @media screen and (max-width: 540px) {
   .todo-section { margin-top: 2rem; padding: 1rem; }

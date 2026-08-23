@@ -1,5 +1,5 @@
 import json
-import subprocess
+import re
 from datetime import date
 from pathlib import Path
 import os
@@ -12,21 +12,24 @@ REPO_ROOT = Path(os.environ.get("REPO_ROOT", SERVER_DIR.parent)).resolve()
 # In Docker, the server may be copied to /app/server.py, so parent.parent becomes /
 # and the repo's public directory is not discoverable unless it is mounted explicitly.
 PUBLIC_DIR = Path(os.environ.get("NEOCITIES_PUBLIC_DIR", REPO_ROOT / "public")).resolve()
-DIST_DIR = Path(os.environ.get("NEOCITIES_DIST_DIR", REPO_ROOT / "dist")).resolve()
 UPDATES_FILE = PUBLIC_DIR / "updates.json"
 POSTS_FILE = PUBLIC_DIR / "posts.json"
 POSTS_DIR = PUBLIC_DIR / "posts"
-DIST_UPDATES_FILE = DIST_DIR / "updates.json"
-DIST_POSTS_FILE = DIST_DIR / "posts.json"
-DIST_POSTS_DIR = DIST_DIR / "posts"
 
 app = Flask(__name__)
 
-print(f"SERVER_DIR={SERVER_DIR}", flush=True)
-print(f"REPO_ROOT={REPO_ROOT}", flush=True)
 print(f"PUBLIC_DIR={PUBLIC_DIR}", flush=True)
-print(f"DIST_DIR={DIST_DIR}", flush=True)
 print(f"UPDATES_FILE={UPDATES_FILE} exists={UPDATES_FILE.exists()}", flush=True)
+
+
+def write_json(path: Path, value: object) -> None:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    temporary_path = path.with_suffix(f"{path.suffix}.tmp")
+    temporary_path.write_text(
+        json.dumps(value, indent=2, ensure_ascii=False) + "\n",
+        encoding="utf-8",
+    )
+    temporary_path.replace(path)
 
 STYLE = """
     body { font-family: sans-serif; max-width: 520px; margin: 40px auto; padding: 0 16px; }
@@ -58,7 +61,7 @@ UPDATE_HTML = """<!DOCTYPE html>
     <input type="text" name="date" value="{today}" required><br><br>
     <label>What happened today?</label><br>
     <textarea class="short" name="info" placeholder="Write your update here..." required></textarea><br>
-    <button type="submit">Post &amp; Deploy</button>
+    <button type="submit">Save update</button>
   </form>
 </body>
 </html>"""
@@ -81,7 +84,7 @@ BLOG_HTML = """<!DOCTYPE html>
     <input type="text" name="slug" placeholder="my_awesome_post" required><br><br>
     <label>Content (Markdown)</label><br>
     <textarea class="tall" name="content" placeholder="Write your post in markdown..." required></textarea><br>
-    <button type="submit">Publish &amp; Deploy</button>
+    <button type="submit">Save blog post</button>
   </form>
 </body>
 </html>"""
@@ -91,7 +94,7 @@ BLOG_HTML = """<!DOCTYPE html>
 def index():
     status = request.args.get("status")
     if status == "ok":
-        msg = '<div class="msg ok">✅ Posted and pushed to GitHub!</div>'
+        msg = '<div class="msg ok">✅ Update saved!</div>'
     elif status == "err":
         msg = f'<div class="msg err">❌ Error: {request.args.get("detail", "unknown")}</div>'
     else:
@@ -109,12 +112,9 @@ def post_update():
         return redirect("/?status=err&detail=date+and+info+required")
 
     try:
-        updates = json.loads(UPDATES_FILE.read_text())
+        updates = json.loads(UPDATES_FILE.read_text(encoding="utf-8"))
         updates.insert(0, {"date": entry_date, "info": info})  # prepend for descending order
-        updates_json = json.dumps(updates, indent=2, ensure_ascii=False)
-        UPDATES_FILE.write_text(updates_json)
-        if DIST_DIR.exists():
-            DIST_UPDATES_FILE.write_text(updates_json)
+        write_json(UPDATES_FILE, updates)
 
         return redirect("/?status=ok")
     except Exception as e:
@@ -125,7 +125,7 @@ def post_update():
 def blog_form():
     status = request.args.get("status")
     if status == "ok":
-        msg = '<div class="msg ok">✅ Blog post published and pushed!</div>'
+        msg = '<div class="msg ok">✅ Blog post saved!</div>'
     elif status == "err":
         msg = f'<div class="msg err">❌ Error: {request.args.get("detail", "unknown")}</div>'
     else:
@@ -142,25 +142,21 @@ def post_blog():
     if not title or not slug or not content:
         return redirect("/blog?status=err&detail=title,+slug,+and+content+required")
 
-    # Sanitize slug (replace spaces/special chars with underscores)
-    slug = slug.replace(" ", "_").replace("-", "_")
+    slug = re.sub(r"[^a-z0-9_]+", "_", slug.lower()).strip("_")
+    if not slug:
+        return redirect("/blog?status=err&detail=invalid+slug")
 
     try:
         # Write the markdown file
         post_path = POSTS_DIR / f"{slug}.md"
-        post_path.write_text(content)
-        if DIST_DIR.exists():
-            DIST_POSTS_DIR.mkdir(parents=True, exist_ok=True)
-            (DIST_POSTS_DIR / f"{slug}.md").write_text(content)
+        POSTS_DIR.mkdir(parents=True, exist_ok=True)
+        post_path.write_text(content, encoding="utf-8")
 
         # Update posts.json
-        posts = json.loads(POSTS_FILE.read_text())
+        posts = json.loads(POSTS_FILE.read_text(encoding="utf-8"))
         today_iso = date.today().isoformat()
         posts.append({"slug": slug, "title": title, "date": today_iso})
-        posts_json = json.dumps(posts, indent=2, ensure_ascii=False)
-        POSTS_FILE.write_text(posts_json)
-        if DIST_DIR.exists():
-            DIST_POSTS_FILE.write_text(posts_json)
+        write_json(POSTS_FILE, posts)
 
         return redirect("/blog?status=ok")
     except Exception as e:
@@ -168,5 +164,4 @@ def post_blog():
 
 
 if __name__ == "__main__":
-    # Listen on port 9500 so this server is reachable over TailScale
     app.run(host="0.0.0.0", port=9500, debug=False)
