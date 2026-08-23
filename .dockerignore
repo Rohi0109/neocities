@@ -9,6 +9,5 @@ Dockerfile
 docker-compose*.yml
 compose.yml
 docs
-neocities-update-server
 __pycache__
 *.pyc
